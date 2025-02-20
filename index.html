@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DeepSeek AI Chat</title>
+    <link rel="stylesheet" href="ai.css">
+    <script type="module">
+        import { OpenAI } from 'https://cdn.jsdelivr.net/npm/openai/+esm';
+
+        const openai = new OpenAI({
+            baseURL: 'https://api.deepseek.com/v1',
+            apiKey: 'sk-10ce332f4c05421585d3a0e2516670c2',
+            dangerouslyAllowBrowser: true,
+        });
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const loading = document.getElementById('loading');
+            
+            try {
+                // 获取用户输入
+                const message = userInput.value.trim();
+                if (!message) {
+                    alert("请输入消息");
+                    return;
+                }
+
+                // 显示用户消息
+                chatBox.value += '您: ' + message + '\n';
+                userInput.value = '';
+
+                // 显示加载状态
+                loading.style.display = 'block';
+
+                // 发送请求
+                const completion = await openai.chat.completions.create({
+                    messages: [{ role: "user", content: message }],
+                    model: "deepseek-chat",
+                });
+
+                // 隐藏加载状态并显示回复
+                loading.style.display = 'none';
+                chatBox.value += 'AI: ' + completion.choices[0].message.content + '\n';
+            } catch (error) {
+                loading.style.display = 'none';
+                console.error("Error:", error);
+                alert("发生错误：" + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('button').addEventListener('click', sendMessage);
+            document.getElementById('userInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>DeepSeek AI</h1>
+        <textarea id="chatBox" readonly></textarea>
+        <div id="loading">AI正在思考<span class="loading-dots"></span></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="在这里输入你的问题...">
+            <button>发送</button>
+        </div>
+    </div>
+</body>
+</html>
